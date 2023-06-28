@@ -1,10 +1,10 @@
 import React from "react";
-import GunTest from "./Components/GunTest";
+import Tabs from "./Components/Tabs";
 
 export default function App() {
 	return (
 		<>
-			<GunTest />
+			<Tabs />
 		</>
 	);
 }
