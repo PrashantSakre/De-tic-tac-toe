@@ -4,14 +4,14 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import GunTest from "./GunTest";
+import AppBoard from "./Game";
 
-function Feed() {
+function Game() {
 	return (
 		<View
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
-			<Text>Tic Tac Toe</Text>
-			<GunTest />
+			<AppBoard />
 		</View>
 	);
 }
@@ -21,7 +21,7 @@ function Profile() {
 		<View
 			style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
 		>
-			<Text>Profile</Text>
+			<GunTest />
 		</View>
 	);
 }
@@ -52,14 +52,14 @@ export default function Tabs() {
 	return (
 		<NavigationContainer>
 			<Tab.Navigator
-				initialRouteName="Game"
+				initialRouteName="Tic Tac Toe"
 				screenOptions={{
 					tabBarActiveTintColor: "#424874",
 				}}
 			>
 				<Tab.Screen
-					name="Game"
-					component={Feed}
+					name="Tic Tac Toe"
+					component={Game}
 					options={{
 						tabBarLabel: "Play",
 						tabBarIcon: ({ color, size }) => (
