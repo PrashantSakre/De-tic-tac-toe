@@ -3,7 +3,7 @@ import { REACT_APP_GUN_PEER } from '@env';
 import Gun from 'gun/gun';
 import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 
-const gun = new Gun(REACT_APP_GUN_PEER); // Gun relay
+export const gun = new Gun(REACT_APP_GUN_PEER); // Gun relay
 
 export default function GunTest() {
   const hello = gun.get('hello');

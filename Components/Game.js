@@ -7,12 +7,22 @@ import {
 	SafeAreaView,
 } from "react-native";
 import Board from "./Board";
-import { calculateWinner } from "../Utils/utils";
+import { allEqual, calculateWinner } from "../Utils/utils";
+import { gun } from "./GunTest";
+import { useEffect } from "react";
 
 const AppBoard = () => {
+	const ticTac = gun.get("ticTac");
 	const [xIsNext, setXIsNext] = useState(false);
 	const [squares, setSquares] = useState(Array(9).fill(null));
 	const [isDraw, setIsDraw] = useState(false);
+
+	useEffect(() => {
+		ticTac.on((data) => {
+			setSquares(JSON.parse(data.tictac));
+			checkDraw(JSON.parse(data.tictac))
+		})
+	}, [])
 
 	const onSquarePress = (i) => {
 		const value = xIsNext ? "X" : "O";
@@ -25,14 +35,20 @@ const AppBoard = () => {
 		newSquares[i] = value;
 
 		setXIsNext(!xIsNext);
-		setSquares(newSquares);
+		ticTac.put({tictac: JSON.stringify(newSquares)})
+		checkDraw(newSquares)
+	};
+
+	function checkDraw(squares) {
 		if (
-			!newSquares.includes(null) &&
-			calculateWinner(newSquares) === null
+			!squares.includes(null) &&
+			calculateWinner(squares) === null
 		) {
 			setIsDraw(true);
+		} else if(allEqual(squares, null)) {
+			setIsDraw(false)
 		}
-	};
+	}
 
 	const winner = calculateWinner(squares);
 
@@ -43,7 +59,7 @@ const AppBoard = () => {
 				<View style={styles.winnerBlock}>
 					<Text style={styles.text}>{`Winner: ${winner}`}</Text>
 					<TouchableOpacity
-						onPress={() => setSquares(Array(9).fill(null))}
+						onPress={() => ticTac.put({tictac: JSON.stringify(Array(9).fill(null))})}
 						style={styles.button}
 					>
 						<Text style={styles.buttonText}>New Game</Text>
@@ -55,7 +71,7 @@ const AppBoard = () => {
 					<Text style={styles.text}>Draw</Text>
 					<TouchableOpacity
 						onPress={() => {
-							setSquares(Array(9).fill(null));
+							ticTac.put({tictac: JSON.stringify(Array(9).fill(null))});
 							setIsDraw(false);
 						}}
 						style={styles.button}

@@ -17,3 +17,5 @@ export function calculateWinner(squares) {
   }
   return null;
 }
+
+export const allEqual = (arr, check) => arr.every(val => val === check)
