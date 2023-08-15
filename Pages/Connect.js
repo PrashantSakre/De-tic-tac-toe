@@ -4,14 +4,17 @@ import { SafeAreaView, StyleSheet } from "react-native";
 import TextInput from "../Components/TextInput";
 import TouchableButton from "../Components/TouchableButton";
 
-function Connect() {
+function Connect({ navigation }) {
 	return (
 		<SafeAreaView style={styles.container}>
 			<Text style={styles.title}>Connect with player</Text>
 			<TextInput placeholder="Enter Player id" />
 			<TouchableButton text="Connect" />
 			<Text style={styles.title}>OR</Text>
-			<TouchableButton text="Scan" />
+			<TouchableButton
+				text="Scan"
+				onPress={() => navigation.navigate("Scan")}
+			/>
 		</SafeAreaView>
 	);
 }
