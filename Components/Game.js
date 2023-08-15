@@ -10,8 +10,9 @@ import Board from "./Board";
 import { allEqual, calculateWinner } from "../Utils/utils";
 import { gun } from "./GunTest";
 import { useEffect } from "react";
+import TouchableButton from "./TouchableButton";
 
-const AppBoard = () => {
+const AppBoard = ({ navigation }) => {
 	const ticTac = gun.get("ticTac");
 	const [xIsNext, setXIsNext] = useState(false);
 	const [squares, setSquares] = useState(Array(9).fill(null));
@@ -20,9 +21,9 @@ const AppBoard = () => {
 	useEffect(() => {
 		ticTac.on((data) => {
 			setSquares(JSON.parse(data.tictac));
-			checkDraw(JSON.parse(data.tictac))
-		})
-	}, [])
+			checkDraw(JSON.parse(data.tictac));
+		});
+	}, []);
 
 	const onSquarePress = (i) => {
 		const value = xIsNext ? "X" : "O";
@@ -35,18 +36,15 @@ const AppBoard = () => {
 		newSquares[i] = value;
 
 		setXIsNext(!xIsNext);
-		ticTac.put({tictac: JSON.stringify(newSquares)})
-		checkDraw(newSquares)
+		ticTac.put({ tictac: JSON.stringify(newSquares) });
+		checkDraw(newSquares);
 	};
 
 	function checkDraw(squares) {
-		if (
-			!squares.includes(null) &&
-			calculateWinner(squares) === null
-		) {
+		if (!squares.includes(null) && calculateWinner(squares) === null) {
 			setIsDraw(true);
-		} else if(allEqual(squares, null)) {
-			setIsDraw(false)
+		} else if (allEqual(squares, null)) {
+			setIsDraw(false);
 		}
 	}
 
@@ -54,32 +52,51 @@ const AppBoard = () => {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<Board squares={squares} onSquarePress={onSquarePress} />
-			{winner && (
-				<View style={styles.winnerBlock}>
-					<Text style={styles.text}>{`Winner: ${winner}`}</Text>
-					<TouchableOpacity
-						onPress={() => ticTac.put({tictac: JSON.stringify(Array(9).fill(null))})}
-						style={styles.button}
-					>
-						<Text style={styles.buttonText}>New Game</Text>
-					</TouchableOpacity>
-				</View>
-			)}
-			{isDraw && (
-				<>
-					<Text style={styles.text}>Draw</Text>
-					<TouchableOpacity
-						onPress={() => {
-							ticTac.put({tictac: JSON.stringify(Array(9).fill(null))});
-							setIsDraw(false);
-						}}
-						style={styles.button}
-					>
-						<Text style={styles.buttonText}>New Game</Text>
-					</TouchableOpacity>
-				</>
-			)}
+			<SafeAreaView style={styles.connectBox}>
+				<TouchableButton
+					text="Connect with player"
+					onPress={() => navigation.navigate("Connect")}
+				/>
+				<TouchableButton
+					text="Share your id"
+					onPress={() => navigation.navigate("QRcode")}
+				/>
+			</SafeAreaView>
+
+			<SafeAreaView style={styles.gameContainer}>
+				<Board squares={squares} onSquarePress={onSquarePress} />
+				{winner && (
+					<View style={styles.winnerBlock}>
+						<Text style={styles.text}>{`Winner: ${winner}`}</Text>
+						<TouchableOpacity
+							onPress={() =>
+								ticTac.put({
+									tictac: JSON.stringify(Array(9).fill(null)),
+								})
+							}
+							style={styles.button}
+						>
+							<Text style={styles.buttonText}>New Game</Text>
+						</TouchableOpacity>
+					</View>
+				)}
+				{isDraw && (
+					<>
+						<Text style={styles.text}>Draw</Text>
+						<TouchableOpacity
+							onPress={() => {
+								ticTac.put({
+									tictac: JSON.stringify(Array(9).fill(null)),
+								});
+								setIsDraw(false);
+							}}
+							style={styles.button}
+						>
+							<Text style={styles.buttonText}>New Game</Text>
+						</TouchableOpacity>
+					</>
+				)}
+			</SafeAreaView>
 		</SafeAreaView>
 	);
 };
@@ -88,6 +105,14 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		alignItems: "center",
+	},
+	connectBox: {
+		display: "flex",
+		gap: 10,
+		margin: 10,
+	},
+	gameContainer: {
+		flex: 1,
 		justifyContent: "center",
 	},
 	winnerBlock: {
