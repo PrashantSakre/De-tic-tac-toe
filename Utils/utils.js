@@ -1,3 +1,23 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const storeLocalData = async (key, value) => {
+	try {
+		const jsonValue = JSON.stringify(value);
+		await AsyncStorage.setItem(key, jsonValue);
+	} catch (e) {
+		return e;
+	}
+};
+
+export const getLocalData = async (key) => {
+	try {
+		const jsonValue = await AsyncStorage.getItem(key);
+		return jsonValue != null ? JSON.parse(jsonValue) : null;
+	} catch (e) {
+		return e;
+	}
+};
+
 export function calculateWinner(squares) {
   const lines = [
     [0, 1, 2],

@@ -7,10 +7,11 @@ import {
 	SafeAreaView,
 } from "react-native";
 import Board from "./Board";
-import { allEqual, calculateWinner } from "../Utils/utils";
+import { allEqual, calculateWinner, getLocalData } from "../Utils/utils";
 import { gun } from "./GunTest";
 import { useEffect } from "react";
 import TouchableButton from "./TouchableButton";
+import { appDB } from "../Gun";
 
 const AppBoard = ({ navigation }) => {
 	const ticTac = gun.get("ticTac");
@@ -18,12 +19,59 @@ const AppBoard = ({ navigation }) => {
 	const [squares, setSquares] = useState(Array(9).fill(null));
 	const [isDraw, setIsDraw] = useState(false);
 
+	const [data, setData] = useState({ groupName: '', pub: '' });
+  const [pair, setPair] = useState('');
+  const [gameData, setGameData] = useState({
+    game: Array(9).fill(null),
+    p1wins: 0,
+    p2wins: 0,
+    draws: 0,
+  });
+
 	useEffect(() => {
-		ticTac.on((data) => {
-			setSquares(JSON.parse(data.tictac));
-			checkDraw(JSON.parse(data.tictac));
+		// ticTac.on((data) => {
+		// 	setSquares(JSON.parse(data.tictac));
+		// 	checkDraw(JSON.parse(data.tictac));
+		// });
+		getLocalData('connection').then(d => {
+			if(d) {
+				console.log(d, 'connection')
+				setData(prev => {return {...prev, groupName: d.id, pub: d.pub}})
+			}
 		});
+		getLocalData('user').then(d => {
+			if(d) {
+				setPair(d.pair)
+			}
+		})
 	}, []);
+
+	useEffect(() => {
+		if(data.groupName && data.pub) {
+			const encData = appDB.get(data.groupName);
+			encData.on((resData) => {
+				getEncData(resData);	
+			})
+		}
+	}, [data])
+
+	async function writeGameData(newSquares, turn) {
+		const enc = await SEA.encrypt(JSON.stringify({...gameData, game: newSquares, turn}), await SEA.secret(data.pub, pair));
+		console.log('enc', enc)
+		appDB.get(data.groupName).put(enc);
+	}
+
+	async function getEncData(encData) {
+		const dec = SEA.decrypt(encData, await SEA.secret(data.pub, pair));
+		dec.then(decData => {
+			setSquares(decData.game)
+			checkDraw(decData.game)
+			setXIsNext(decData.turn)
+			console.log('getEncData', decData)
+			setGameData(pre => {return {...pre, game: decData.game}})
+		});
+	}
+
 
 	const onSquarePress = (i) => {
 		const value = xIsNext ? "X" : "O";
@@ -35,8 +83,9 @@ const AppBoard = ({ navigation }) => {
 
 		newSquares[i] = value;
 
-		setXIsNext(!xIsNext);
-		ticTac.put({ tictac: JSON.stringify(newSquares) });
+		// setXIsNext(!xIsNext);
+		// ticTac.put({ tictac: JSON.stringify(newSquares) });
+		writeGameData(newSquares, !xIsNext)
 		checkDraw(newSquares);
 	};
 
@@ -58,9 +107,10 @@ const AppBoard = ({ navigation }) => {
 					onPress={() => navigation.navigate("Connect")}
 				/>
 				<TouchableButton
-					text="Share your id"
+					text="Share your pub key"
 					onPress={() => navigation.navigate("QRcode")}
 				/>
+				<Text>Connection group Id: {data.groupName}</Text>
 			</SafeAreaView>
 
 			<SafeAreaView style={styles.gameContainer}>
@@ -70,9 +120,10 @@ const AppBoard = ({ navigation }) => {
 						<Text style={styles.text}>{`Winner: ${winner}`}</Text>
 						<TouchableOpacity
 							onPress={() =>
-								ticTac.put({
-									tictac: JSON.stringify(Array(9).fill(null)),
-								})
+								// ticTac.put({
+								// 	tictac: JSON.stringify(Array(9).fill(null)),
+								// })
+								writeGameData(Array(9).fill(null))
 							}
 							style={styles.button}
 						>
@@ -85,10 +136,11 @@ const AppBoard = ({ navigation }) => {
 						<Text style={styles.text}>Draw</Text>
 						<TouchableOpacity
 							onPress={() => {
-								ticTac.put({
-									tictac: JSON.stringify(Array(9).fill(null)),
-								});
+								// ticTac.put({
+								// 	tictac: JSON.stringify(Array(9).fill(null)),
+								// });
 								setIsDraw(false);
+								writeGameData(Array(9).fill(null))
 							}}
 							style={styles.button}
 						>

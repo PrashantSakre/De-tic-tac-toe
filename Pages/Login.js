@@ -1,15 +1,26 @@
-import React from "react";
-import { Text } from "react-native";
-import { SafeAreaView, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { SafeAreaView, StyleSheet, Text } from "react-native";
+import { createLocalUser } from "../Gun";
 import TextInput from "../Components/TextInput";
 import TouchableButton from "../Components/TouchableButton";
 
-function Login() {
+function Login({ navigation }) {
+	const [userNameText, setUserNameText] = useState('');
+
+	function handleCreateUser() {
+		createLocalUser(userNameText).then((d) => {
+			console.log("d", d)
+			navigation.reset({
+				index: 0,
+				routes: [{ name: 'tabs' }],
+			})
+		})
+	}
 	return (
 		<SafeAreaView style={styles.container}>
 			<Text style={styles.title}>Tic Tac Toe</Text>
-			<TextInput placeholder="Enter Name" />
-			<TouchableButton text="Enter" />
+			<TextInput placeholder="Enter Name" onChangeText={setUserNameText} value={userNameText} />
+			<TouchableButton text="Enter" onPress={handleCreateUser} />
 		</SafeAreaView>
 	);
 }
